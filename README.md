@@ -68,6 +68,10 @@ There are two possible ways to submit this project to Canvas. Lambda Staff will 
 Be prepared to demonstrate your understanding of this week's concepts by answering questions on the following topics.
 
 1. Differences between using _sessions_ or _JSON Web Tokens_ for authentication.
+Sessions are stored in the server's memory, and can thus slow down an app if it has a lot of traffic. JWT, on the other hand, are stateless, which allows them to save server resources.
 2. What does `bcryptjs` do to help us store passwords in a secure manner?
+bcryptjs generates random bytes, called salt, and combines them with the passwords in a table prior to hashing, which will then create unique hashes for each password in the table.
 3. How are unit tests different from integration and end-to-end testing?
+Unit tests test how specific pieces of code work individually, whereas integration tests test how pieces of code work together.
 4. How does _Test Driven Development_ change the way we write applications and tests?
+It enables us to write the cleanest and most concise code possible, by only writing the code required to pass whatever tests you have. With TDD, we write code for the tests, rather than writing tests for the code.
