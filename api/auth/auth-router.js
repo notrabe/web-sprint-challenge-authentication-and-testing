@@ -1,4 +1,10 @@
 const router = require('express').Router();
+const bcryptjs = require('bcryptjs')
+const jwt = require('jsonwebtoken')
+const {jwtSecret} = require('./secret')
+const Users = require('../users/users-model')
+const {isValid} = require('../users/users-service')
+
 
 router.post('/register', (req, res) => {
   res.end('implement register, please!');
@@ -26,9 +32,30 @@ router.post('/register', (req, res) => {
     4- On FAILED registration due to the `username` being taken,
       the response body should include a string exactly as follows: "username taken".
   */
+
+  const credentials = req.body;
+  if(isValid(credentials)){
+    const rounds = process.env.BCRYPT_ROUNDS || 8
+
+    const hash = bcryptjs.hashSync(credentials.password, rounds)
+
+    credentials.password = hash
+
+    Users.add(credentials)
+      .then(user => {
+        res.status(201).json({data: user})
+      })
+      .catch(err => {
+        res.status(500).json({message: err.message})
+      })
+  } else {
+    res.status(400).json({
+      message: 'please provide valid username and password'
+    })
+  }
 });
 
-router.post('/login', (req, res) => {
+router.post('/login', async (req, res, next) => {
   res.end('implement login, please!');
   /*
     IMPLEMENT
@@ -53,6 +80,35 @@ router.post('/login', (req, res) => {
     4- On FAILED login due to `username` not existing in the db, or `password` being incorrect,
       the response body should include a string exactly as follows: "invalid credentials".
   */
+
+  try {
+    const {username,password} = req.body
+    const user = await Users.getBy({username})
+
+    if (user.length === 0) {
+      return res.status(401).json({ message: 'Inavid.'})
+    }
+
+    const passwordValid = bcryptjs.compareSync(password, user[0].password)
+
+    if(!passwordValid) {
+      return res.status(401).json({message: 'invalid password.'})
+    }
+
+    const token = jwt.sign(
+      {
+        userID: user.id,
+      },
+      process.env.JWT_SECRET
+    )
+
+    res.cookie('token', token)
+    res.json({ token, message: `Hello ${user[0].username}`})
+  }
+
+  catch (err) {
+    next(err)
+  }
 });
 
 module.exports = router;
