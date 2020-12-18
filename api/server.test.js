@@ -6,7 +6,7 @@ const db = require('../data/dbConfig')
 const user = {username: 'username', password: 'password'}
 
 test('sanity', () => {
-  expect(true).toBe(true)
+  expect(true).toBe(false)
 })
 
 describe('server.js', () => {
@@ -24,6 +24,25 @@ describe('server.js', () => {
         .send(user)
       expect(res.status).toBe(201)
     })
-    
+    it('returns 500 when information is invalid', async () => {
+      const res = await request(server)
+        .post('api/auth/register')
+        .send({user: 'user', pass: 'pass'})
+      expect(res.status).toBe(500)
+    })
+  })
+  describe('login', () => {
+    it('works with valid user', async () => {
+      const res = await request(server)
+        .post('/api/auth/login')
+        .send(user)
+      expect(res.status).toBe(201)
+    })
+    it('returns 500 with invalid user', async () => {
+      const res = await request(server)
+        .post('/api/auth/login')
+        .send({username: 'not-a-username', password: 'not-a-password'})
+      expect(res.status).toBe(500)
+    })
   })
 })
